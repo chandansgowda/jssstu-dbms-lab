@@ -2,7 +2,8 @@
 drop database if exists student_036;
 
 -- Creating Database
-create database student_036;
+-- 036 is my USN's ending three digits. (Use your own USN here)
+create database student_036; 
 use student_036;
 
 -- Creating table
