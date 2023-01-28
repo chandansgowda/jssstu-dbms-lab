@@ -112,7 +112,13 @@ SELECT DISTINCT c.dept
      FROM Course c,BookAdoption b,TextBook t
      WHERE c.course=b.course
      AND t.bookIsbn=b.bookIsbn
-     AND t.publisher='PEARSON');
+     AND t.publisher='PEARSON')
+     AND c.dept NOT IN
+     ( SELECT c.dept
+     FROM Course c, BookAdoption b, TextBook t
+     WHERE c.course=b.course
+     AND t.bookIsbn=b.bookIsbn
+     AND t.publisher!='PEARSON');
 
 
 -- List the students who have scored maximum marks in ‘DBMS’ course.
