@@ -52,8 +52,8 @@ INSERT INTO Customers VALUES
 INSERT INTO Orders VALUES
 (001, "2020-01-14", 0001, 2000),
 (002, "2021-04-13", 0002, 500),
-(003, "2019-10-02", 0005, 2500),
-(004, "2019-05-12", 0003, 1000),
+(003, "2019-10-02", 0003, 2500),
+(004, "2019-05-12", 0005, 1000),
 (005, "2020-12-23", 0004, 1200);
 
 INSERT INTO Items VALUES
@@ -96,22 +96,39 @@ SELECT * FROM Warehouses;
 -- List the Order# and Ship_date for all orders shipped from Warehouse# "0001".
 select order_id,ship_date from Shipments where warehouse_id=0001;
 
--- List the Warehouse information from which the Customer named "Kumar" was supplied his orders. Produce a listing of Order#, Warehouse#
-select order_id,warehouse_id from Warehouses natural join Shipments where order_id = (select order_id from Orders where cust_id =(Select cust_id from Customers where cname like "%Kumar%"));
+-- List the Warehouse information from which the Customer named "Kumar" was supplied his orders. Produce a listing of Order#, Warehouse# (NOT WORKING WHEN KUMAR has multiple orders)
+select order_id,warehouse_id from Warehouses natural join Shipments where order_id in (select order_id from Orders where cust_id in (Select cust_id from Customers where cname like "%Kumar%"));
 
-
--- Delete all orders for customer named "Kumar".
-delete from Orders where cust_id = (select cust_id from Customers where cname like "%Kumar%");
+-- Produce a listing: Cname, #ofOrders, Avg_Order_Amt, where the middle column is the total number of orders by the customer and the last column is the average order amount for that customer. (Use aggregate functions) 
+select cname, COUNT(*) as no_of_orders, AVG(order_amt) as avg_order_amt
+from Customers c, Orders o
+where c.cust_id=o.cust_id 
+group by cname;
 
 -- Find the item with the maximum unit price.
 select max(unitprice) from Items;
 
+-- Create a view to display orderID and shipment date of all orders shipped from a warehouse 2.
 
--- Create a view to display orderID and shipment date of all orders shipped from warehouse 2.
-create view OrderShipment as 
-select order_id, ship_date from Orders natural join Shipments where warehouse_id=0002;
+create view ShipmentDatesFromWarehouse2 as
+select order_id, ship_date
+from Shipments
+where warehouse_id=2;
 
-select * from OrderShipment;
+select * from ShipmentDatesFromWarehouse2;
+
+-- A view that shows the warehouse ids from where the kumar’s orders are being shipped.
+
+create view WharehouseWithKumarOrders as
+select s.warehouse_id
+from Warehouses w, Customers c, Orders o, Shipments s
+where w.warehouse_id = s.warehouse_id and s.order_id=o.order_id and o.cust_id=c.cust_id and c.cname="Kumar";
+
+select * from WharehouseWithKumarOrders;
+
+-- Delete all orders for customer named "Kumar".
+delete from Orders where cust_id = (select cust_id from Customers where cname like "%Kumar%");
+
 
 -- Trigger that prevents warehouse details from being deleted if any item has to be shipped from that warehouse
 
@@ -131,5 +148,21 @@ DELIMITER ;
 DELETE FROM Warehouses WHERE warehouse_id = 2; -- Will give error since an item has to be shipped from warehouse 2
 
 
+-- A tigger that updates order_amount based on quantity and unit price of order_item
 
+DELIMITER $$
+create trigger UpdateOrderAmt
+after insert on OrderItems
+for each row
+BEGIN
+	update Orders set order_amt=(new.qty*(select distinct unitprice from Items NATURAL JOIN OrderItems where item_id=new.item_id)) where Orders.order_id=new.order_id;
+END; $$
+DELIMITER ;
 
+INSERT INTO Orders VALUES
+(006, "2020-12-23", 0004, 1200);
+
+INSERT INTO OrderItems VALUES 
+(006, 0001, 5); -- This will automatically update the Orders Table also
+
+select * from Orders;
