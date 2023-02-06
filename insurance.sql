@@ -44,7 +44,8 @@ INSERT INTO person VALUES
 ("D111", "Driver_1", "Kuvempunagar, Mysuru"),
 ("D222", "Smith", "JP Nagar, Mysuru"),
 ("D333", "Driver_3", "Udaygiri, Mysuru"),
-("D444", "Driver_4", "Rajivnagar, Mysuru");
+("D444", "Driver_4", "Rajivnagar, Mysuru"),
+("D555", "Driver_5", "Vijayanagar, Mysore");
 
 INSERT INTO car VALUES
 ("KA-20-AB-4223", "Swift", 2020),
@@ -56,9 +57,10 @@ INSERT INTO car VALUES
 INSERT INTO accident VALUES
 (43627, "2020-04-05", "Nazarbad, Mysuru"),
 (56345, "2019-12-16", "Gokulam, Mysuru"),
-(63744, "2020-05-14", "Vijaynagar Stage 2, Mysuru"),
+(63744, "2020-05-14", "Vijaynagar, Mysuru"),
 (54634, "2019-08-30", "Kuvempunagar, Mysuru"),
-(65738, "2021-01-21", "JSS Layout, Mysuru");
+(65738, "2021-01-21", "JSS Layout, Mysuru"),
+(66666, "2021-01-21", "JSS Layout, Mysuru");
 
 INSERT INTO owns VALUES
 ("D111", "KA-20-AB-4223"),
@@ -118,6 +120,25 @@ where c.reg_no=p.reg_no;
 
 select * from CarsInAccident;
 
+-- Create a view that shows name and address of drivers who own a car.
+
+create view DriversWithCar as
+select driver_name, address
+from person p, owns o
+where p.driver_id=o.driver_id;
+
+select * from DriversWithCar;
+
+
+-- Create a view that shows the names of the drivers who a participated in a accident in a specific place.
+
+create view DriversWithAccidentInPlace as
+select driver_name
+from person p, accident a, participated ptd
+where p.driver_id = ptd.driver_id and a.report_no = ptd.report_no and a.location="Vijaynagar, Mysuru";
+
+select * from DriversWithAccidentInPlace;
+
 -- Trigger that prevents a driver with total_damage_amount greater than Rs. 50,000 from owning a car
 
 delimiter //
@@ -135,3 +156,34 @@ delimiter ;
 
 insert into owns VALUES
 ("D222", "KA-21-AC-5473"); -- Will give error since total damage amount of D222 exceeds 50k
+
+-- A trigger that prevents a driver from participating in more than 2 accidents in a given year.
+
+DELIMITER //
+create trigger PreventParticipation
+before insert on participated
+for each row
+BEGIN
+	IF 2<=(select count(*) from participated where driver_id=new.driver_id) THEN
+		signal sqlstate '45000' set message_text='Driver has already participated in 2 accidents';
+	END IF;
+END;//
+DELIMITER ;
+
+INSERT INTO participated VALUES
+("D222", "KA-20-AB-4223", 66666, 20000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
