@@ -25,10 +25,10 @@ create table if not exists reserves(
 );
 
 insert into Sailors values
-(1,"Albert", 4.6, 40),
+(1,"Albert", 5.0, 40),
 (2, "Nakul", 5.0, 49),
 (3, "Darshan", 9, 18),
-(4, "Astorm Gowda", 3, 68),
+(4, "Astorm Gowda", 2, 68),
 (5, "Armstormin", 7, 19);
 
 
@@ -49,7 +49,7 @@ select * from Sailors;
 select * from Boat;
 select * from reserves;
 
--- Select all the boats reserved by Albert
+-- Find the colours of the boats reserved by Albert
 select color 
 from Sailors s, Boat b, reserves r 
 where s.sid=r.sid and b.bid=r.bid and s.sname="Albert";
@@ -103,6 +103,25 @@ order by rating DESC;
 
 select * from NamesAndRating;
 
+-- Create a view that shows the names of the sailors who have reserved a boat on a given date.
+
+create view SailorsWithReservation as
+select sname
+from Sailors s, reserves r
+where r.sid=s.sid and r.sdate="2023-03-06";
+
+select * from SailorsWithReservation;
+
+-- Create a view that shows the names and colours of all the boats that have been reserved by a sailor with a specific rating.
+
+create view ReservedBoatsWithRatedSailor as
+select distinct bname, color
+from Sailors s, Boat b, reserves r
+where s.sid=r.sid and b.bid=r.bid and s.rating=5;
+
+select * from ReservedBoatsWithRatedSailor;
+
+
 -- Trigger that prevents boats from being deleted if they have active reservation
 
 DELIMITER //
@@ -118,4 +137,48 @@ END;//
 DELIMITER ;
 
 delete from Boat where bid=103; -- This gives error since boat 103 is reserved
+
+
+-- A trigger that prevents sailors with rating less than 3 from reserving a boat.
+
+
+DELIMITER //
+create trigger BlockReservation
+before insert on reserves
+for each row
+BEGIN
+	IF EXISTS (select * from Sailors where sid=new.sid and rating<3) THEN
+		signal sqlstate '45000' set message_text='Sailor rating less than 3';
+	END IF;
+END;//
+
+DELIMITER ;
+
+insert into reserves values
+(4,2,"2023-10-01"); -- Will give error since sailor rating is less than 3
+
+
+-- A trigger that deletes all expired reservations. (NOT WORKING - Has to be updated)
+
+DELIMITER //
+create trigger DeleteExpiredReservations
+before insert on reserves
+for each row
+BEGIN
+	delete from reserves where sdate<curdate();
+END;//
+
+DELIMITER ;
+
+
+insert into reserves values
+(3,2,"2023-10-01"); -- This will delete the expired reservations before inserting new record
+
+
+
+
+
+
+
+
 
