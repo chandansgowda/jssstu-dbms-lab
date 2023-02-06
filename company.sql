@@ -118,6 +118,12 @@ select name,dname,d_loc from Employee e join Department d on e.d_no=d.d_no join 
 
 select * from emp_details;
 
+-- Create a view that shows project name, location and dept.
+create view ProjectDetails as
+select p_name, p_loc, dname
+from Project p NATURAL JOIN Department d;
+
+select * from ProjectDetails;
 
 -- A trigger that automatically updates manager’s start date when he is assigned .
 
@@ -134,7 +140,20 @@ DELIMITER ;
 insert into Department (d_no, dname, mgr_ssn) values
 (006,"R&D","01NB354"); -- This will automatically set mgr_start_date to today's date
 
+-- Create a trigger that prevents a project from being deleted if it is currently being worked by any employee.
 
+DELIMITER //
+create trigger PreventDelete
+before delete on Project
+for each row
+BEGIN
+	IF EXISTS (select * from WorksOn where p_no=old.p_no) THEN
+		signal sqlstate '45000' set message_text='This project has an employee assigned';
+	END IF;
+END; //
 
+DELIMITER ;
+
+delete from Project where p_no=241563; -- Will give error 
 
 
