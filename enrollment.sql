@@ -135,6 +135,21 @@ where e.course=c.course and e.regno="01HF235";
 select * from CoursesOptedByStudent;
 
 
+-- Create a view to show the enrolled details of a student.
+create view StudentEnrollmentDetails as
+select * from Enroll 
+where regno="01HF235";
+
+select * from StudentEnrollmentDetails;
+
+-- Create a view to display course related books from course_adoption and text book table using book_ISBN. 
+create view CourseRelatedBooks as
+select cname, book_title
+from Course c, TextBook tb, BookAdoption ba
+where c.course=ba.course and tb.bookIsbn=ba.bookIsbn;
+
+select * from CourseRelatedBooks;
+
 -- Create a trigger such that it Deletes all records from enroll table when course is deleted 
 DELIMITER //
 create or replace trigger DeleteRecords
@@ -148,3 +163,18 @@ DELIMITER ;
 
 delete from Course where course=2; -- Will also delete records from Enroll table
 
+-- Create a trigger that prevents a student from enrolling in a course if the marks pre_requisit is less than the given threshold 
+DELIMITER //
+create or replace trigger PreventEnrollment
+before insert on Enroll
+for each row
+BEGIN
+	IF (new.marks<10) THEN
+		signal sqlstate '45000' set message_text='Marks below threshold';
+	END IF;
+END;//
+
+DELIMITER ;
+
+INSERT INTO Enroll VALUES
+("01HF235", 002, 5, 5); -- Gives error since marks is less than 10
