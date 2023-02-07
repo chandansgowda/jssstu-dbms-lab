@@ -160,9 +160,13 @@ insert into reserves values
 
 -- A trigger that deletes all expired reservations. (NOT WORKING - Has to be updated)
 
+create table TempTable (
+	last_deleted_date date primary key
+); -- Temporary table to be used in DeleteExpiredReservations Table
+
 DELIMITER //
 create trigger DeleteExpiredReservations
-before insert on reserves
+before insert on TempTable
 for each row
 BEGIN
 	delete from reserves where sdate<curdate();
@@ -170,11 +174,12 @@ END;//
 
 DELIMITER ;
 
+select * from reserves; -- Expired reservations are available
 
-insert into reserves values
-(3,2,"2023-10-01"); -- This will delete the expired reservations before inserting new record
+insert into TempTable values
+(curdate()); -- This will delete the expired reservations and also insert the current date to temp table
 
-
+select * from reserves; -- Notice that all expired reservations are deleted
 
 
 
