@@ -96,7 +96,7 @@ SELECT * FROM Warehouses;
 -- List the Order# and Ship_date for all orders shipped from Warehouse# "0001".
 select order_id,ship_date from Shipments where warehouse_id=0001;
 
--- List the Warehouse information from which the Customer named "Kumar" was supplied his orders. Produce a listing of Order#, Warehouse# (NOT WORKING WHEN KUMAR has multiple orders)
+-- List the Warehouse information from which the Customer named "Kumar" was supplied his orders. Produce a listing of Order#, Warehouse#
 select order_id,warehouse_id from Warehouses natural join Shipments where order_id in (select order_id from Orders where cust_id in (Select cust_id from Customers where cname like "%Kumar%"));
 
 -- Produce a listing: Cname, #ofOrders, Avg_Order_Amt, where the middle column is the total number of orders by the customer and the last column is the average order amount for that customer. (Use aggregate functions) 
