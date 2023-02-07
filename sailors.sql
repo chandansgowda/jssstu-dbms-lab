@@ -158,7 +158,7 @@ insert into reserves values
 (4,2,"2023-10-01"); -- Will give error since sailor rating is less than 3
 
 
--- A trigger that deletes all expired reservations. (NOT WORKING - Has to be updated)
+-- A trigger that deletes all expired reservations.
 
 create table TempTable (
 	last_deleted_date date primary key
