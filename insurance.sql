@@ -79,13 +79,13 @@ INSERT INTO participated VALUES
 
 
 -- Find the total number of people who owned a car that were involved in accidents in 2021
--- 1. Total number of people who owned cars involved in accidents in 2021
 SELECT COUNT(DISTINCT P.driver_id) AS total_owners
 FROM person P
 JOIN owns O ON P.driver_id = O.driver_id
 JOIN participated PA ON O.driver_id = PA.driver_id AND O.reg_no = PA.reg_no
 JOIN accident A ON PA.report_no = A.report_no
 WHERE YEAR(A.accident_date) = 2021;
+
 -- Find the number of accident in which cars belonging to smith were involved
 
 select COUNT(distinct a.report_no)
