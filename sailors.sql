@@ -50,7 +50,7 @@ select * from Boat;
 select * from reserves;
 
 -- Find the colours of the boats reserved by Albert
-select color 
+SELECT DISTINCT b.color 
 from Sailors s, Boat b, reserves r 
 where s.sid=r.sid and b.bid=r.bid and s.sname="Albert";
 
